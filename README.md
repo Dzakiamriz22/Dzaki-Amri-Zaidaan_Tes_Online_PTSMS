@@ -52,6 +52,12 @@ Base URL: `/api`
 ### Purchases
 - `GET /api/purchases` - Lihat semua pembelian
 - `POST /api/purchases` - Buat pembelian (date, items[])
+- `GET /api/purchases/{id}` - Lihat detail pembelian
+
+### Report
+- `GET /api/report/purchases` - Report menggunakan Store Procedure
+  - Parameter: `start_date`, `end_date`, `product_id` (optional)
+  - Output: tanggal, nama_produk, total_transaksi, total_qty, total_amount
 
 ---
 
@@ -78,9 +84,21 @@ curl -X POST http://127.0.0.1:8000/api/purchases \
   -d '{
     "date":"2026-04-01",
     "items":[
-      {"product_id":1,"qty":2,"price":5000}
+      {"product_id":1,"qty":2}
     ]
   }'
+```
+
+**Get Report Purchases (dengan Store Procedure):**
+```bash
+curl -X GET "http://127.0.0.1:8000/api/report/purchases?start_date=2026-04-01&end_date=2026-04-30" \
+  -H "Authorization: Bearer TOKEN"
+```
+
+Dengan filter product_id:
+```bash
+curl -X GET "http://127.0.0.1:8000/api/report/purchases?start_date=2026-04-01&end_date=2026-04-30&product_id=1" \
+  -H "Authorization: Bearer TOKEN"
 ```
 
 ---
@@ -91,6 +109,25 @@ curl -X POST http://127.0.0.1:8000/api/purchases \
 - **purchases**: id, date, total_price, timestamps
 - **purchase_items**: id, purchase_id, product_id, qty, price, timestamps
 - **users**: id, name, email, password, timestamps
+
+## Store Procedure
+
+### sp_report_purchases
+```sql
+CALL sp_report_purchases('2026-04-01', '2026-04-30', NULL)
+```
+
+Parameter:
+- `start_date` (DATE) - Filter tanggal mulai
+- `end_date` (DATE) - Filter tanggal akhir
+- `product_id` (BIGINT UNSIGNED, nullable) - Filter produk (NULL = semua produk)
+
+Output columns:
+- `tanggal` - Tanggal pembelian
+- `nama_produk` - Nama produk
+- `total_transaksi` - Jumlah transaksi untuk tanggal & produk tersebut
+- `total_qty` - Total qty terjual
+- `total_amount` - Total amount/revenue
 
 ---
 
